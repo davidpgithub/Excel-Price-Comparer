@@ -43,21 +43,23 @@ if correct_file and compare_file:
     col1.markdown("**Correct File Columns**")
     col2.markdown("**Compare File Columns**")
 
+    correct_cols = correct_df.loc[:, ~correct_df.columns.str.contains("Unnamed")]
+    compare_cols = compare_df.loc[:, ~compare_df.columns.str.contains("Unnamed")]
     # Row 1
     with col1:
-        correct_id = st.selectbox("Correct ID column", correct_df.columns)
+        correct_id = st.selectbox("Correct ID column", correct_cols.columns)
     with col2:
-        compare_id = st.selectbox("Compare ID column", compare_df.columns)
+        compare_id = st.selectbox("Compare ID column", compare_cols.columns)
 
     # Row 2
     with col1:
-         correct_price = st.selectbox("Correct Price column", correct_df.columns)
+         correct_price = st.selectbox("Correct Price column", correct_cols.columns)
     with col2:
-        compare_price = st.selectbox("Compare Price column", compare_df.columns)
+        compare_price = st.selectbox("Compare Price column", compare_cols.columns)
 
     # Row 3
     with col1:
-        correct_name = st.selectbox("Correct Name column", correct_df.columns)
+        correct_name = st.selectbox("Correct Name column", correct_cols.columns)
    
 
    
@@ -86,24 +88,25 @@ if correct_file and compare_file:
     final_mismatch = final_mismatch.rename(
         columns={
             correct_price: "Price_correct",
-            compare_price: "Price_wrong"
+            compare_price: "Price_comparison"
         }
     )
     final_mismatch = final_mismatch.reset_index(drop=True)
 
     # 7️⃣ Show result and allow download
-    st.write("Mismatches found:", len(final_mismatch))
-    st.dataframe(final_mismatch)
+    if correct_id != correct_price != correct_name:
+        st.write("Mismatches found:", len(final_mismatch))
+        st.dataframe(final_mismatch)
 
-    # Download button
-    @st.cache_data
-    def convert_df(df):
-        return df.to_csv(index=False).encode('utf-8')
+        # Download button
+        @st.cache_data
+        def convert_df(df):
+            return df.to_csv(index=False).encode('utf-8')
 
-    csv = convert_df(final_mismatch)
-    st.download_button(
-        label="Download mismatches as CSV",
-        data=csv,
-        file_name='mismatches.csv',
-        mime='text/csv',
-    )
+        csv = convert_df(final_mismatch)
+        st.download_button(
+            label="Download mismatches as CSV",
+            data=csv,
+            file_name='mismatches.csv',
+            mime='text/csv',
+        )
